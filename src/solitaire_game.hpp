@@ -14,7 +14,7 @@ class SolitaireGame {
             for (int i = 0; i < 7; i++) {
                 tableau.emplace_back();
                 for (int j = 0; j <= i; j++) {
-                    CardWithSprite c = deck.draw_from_top();
+                    CardWithTexture c = deck.draw_from_top();
                     if (j == i) {
                         c.flip();
                         c.make_clickable();
@@ -26,13 +26,18 @@ class SolitaireGame {
                 foundation.emplace_back();
             }
         }
-        [[nodiscard]] std::vector<CardWithSprite> get_clickable_cards() const {
-            std::vector<CardWithSprite> clickable_cards;
+        [[nodiscard]] std::vector<CardWithTexture> get_clickable_cards() const {
+            std::vector<CardWithTexture> clickable_cards;
             for (auto& t : tableau) {
                 if (t.size() > 0) {
-                if (CardWithSprite c = t.cards.back(); c.is_clickable) {
+                if (CardWithTexture c = t.cards.back(); c.is_clickable) {
                         clickable_cards.push_back(c);
                     }
+                }
+            }
+            if (waste.size() > 0) {
+                if (CardWithTexture c = waste.cards.back(); c.is_clickable) {
+                    clickable_cards.push_back(c);
                 }
             }
             return clickable_cards;
