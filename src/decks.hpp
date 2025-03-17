@@ -9,7 +9,7 @@
 class GenericDeck {
     public:
         GenericDeck() = default;
-        std::vector<CardWithTexture> cards;
+        std::vector<CardWithTexture*> cards;
         void shuffle() {
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -19,27 +19,30 @@ class GenericDeck {
                 std::swap(card, cards[j]);
             }
         }
-        CardWithTexture draw_from_top() {
-            const CardWithTexture c = cards.back();
+        CardWithTexture* draw_from_top() {
+            CardWithTexture* c_ptr = cards.back();
             cards.pop_back();
-            return c;
+            return c_ptr;
         }
-        CardWithTexture draw_from_bottom() {
-            const CardWithTexture c = cards.front();
+        CardWithTexture* draw_from_bottom() {
+            CardWithTexture* c = cards.front();
             cards.erase(cards.begin());
             return c;
         }
-        void add_to_top(const CardWithTexture& c) {
+        void add_to_top(CardWithTexture* c) {
             cards.push_back(c);
         }
-        void add_to_bottom(const CardWithTexture& c) {
+        void add_to_bottom(CardWithTexture* c) {
             cards.insert(cards.begin(), c);
         }
         void print() const {
             for (const auto& card : cards) {
-                std::cout << card.value << card.suit << " ";
+                std::cout << card->value << card->suit << " ";
             }
             std::cout << std::endl;
+        }
+        CardWithTexture* operator[](size_t index) {
+            return cards[index];
         }
         [[nodiscard]] unsigned int size() const { return cards.size(); }
 };
@@ -50,10 +53,8 @@ class Deck : public GenericDeck {
             for (int i = 1; i <= 13; i++) {
                 const std::vector<std::string> filenames(4);
                 for (const auto& suit : {'H', 'D', 'S', 'C'}) {
-                    const std::string filename = "src/sprites/" + std::to_string(i) + suit + ".png";
-                    std::cout << filename << std::endl;
-                    const sf::Texture texture(filename);
-                    cards.emplace_back(i, suit, texture);
+                    //const std::string filename = "src/sprites/" + std::to_string(i) + suit + ".png";
+                    cards.emplace_back(i, suit, "src/Sprites/1C.png");
                 }
             }
         }
