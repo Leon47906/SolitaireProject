@@ -20,7 +20,7 @@ public:
                     c.flip();
                     c.makeClickable();
                 }
-                tableau[i].add_to_top(c);
+                tableau[i].add_to_top(&c);
             }
         }
         for (int i = 0; i < 4; i++) {
@@ -31,14 +31,16 @@ public:
         std::vector<CardWithTexture> clickable_cards;
         for (auto& t : tableau) {
             if (const size_t size = t.size(); size > 0) {
-                if (CardWithTexture c = t[size-1]; c.is_clickable) {
+                if (CardWithTexture* c_ptr = t[size-1]; c_ptr->is_clickable) {
+                    CardWithTexture& c = *c_ptr;
                     std::cout << c.toString() << std::endl;
                     clickable_cards.push_back(c);
                 }
             }
         }
         if (waste.size() > 0) {
-            if (CardWithTexture c = waste.cards.back(); c.is_clickable) {
+            if (CardWithTexture* c_ptr = waste.cards.back(); c_ptr->is_clickable) {
+                CardWithTexture& c = *c_ptr;
                 clickable_cards.push_back(c);
             }
         }
@@ -49,9 +51,9 @@ public:
         deck.print();
         std::cout << "Tableau: " << std::endl;
         for (const auto& t : tableau) {
-            for (const auto& c : t.cards) {
-                if (c.face_up) {
-                    std::cout << c.value << c.suit << " ";
+            for (const auto& c_ptr : t.cards) {
+                if (c_ptr->face_up) {
+                    std::cout << c_ptr->value << c_ptr->suit << " ";
                 } else {
                     std::cout << "X ";
                 }

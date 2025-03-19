@@ -7,22 +7,19 @@ constexpr sf::Vector2f offset = {32.0f, 48.0f};
 int main()
 {
     SolitaireGame game;
+    game.print();
     std::vector<GenericDeck>& tableau = game.tableau;
     std::vector<CardWithTexture*> rendered_cards, movable_cards;
-    /*
+    const auto backTexture(sf::Texture("src/Sprites/CardBackRed.png"));
     for (size_t i = 0; i < tableau.size(); i++) {
         for (size_t j = 0; j < tableau[i].size(); j++) {
-            tableau[i][j].setPosition({i*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), j*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)});
-            rendered_cards.push_back(&tableau[i][j]);
-            if (j == tableau[i].size()-1) {movable_cards.push_back(&tableau[i][j]);}
+            CardWithTexture& card = *tableau[i][j];
+            card.setPosition({i*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), j*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)/2.5f});
+            rendered_cards.push_back(&card);
+            if (j == tableau[i].size()-1) {movable_cards.push_back(&card);}
         }
     }
-    */
-    //CardWithTexture test_card(1,'C',"src/sprites/1C.png");
-    CardWithTexture test_card = tableau[0][0];
-    test_card.setPosition({0,0});
-    rendered_cards.push_back(&test_card);
-    movable_cards.push_back(&test_card);
+
     auto window = sf::RenderWindow(sf::VideoMode({800u, 600u}), "Solitaire",
         sf::Style::Close);
     window.setFramerateLimit(144);
@@ -38,6 +35,7 @@ int main()
             {
                 window.close();
             }
+
             if (const auto* mouseButtonPresed = event->getIf<sf::Event::MouseButtonPressed>()) {
                 if (mouseButtonPresed->button == sf::Mouse::Button::Left) {
                     if (dragging_card_ptr != nullptr) {
@@ -64,11 +62,17 @@ int main()
                     dragging_card_ptr->position = mouse_position - offset;
                 }
             }
+
         }
         window.clear();
         for (const auto card_ptr : rendered_cards) {
-            const sf::Sprite& sprite = card_ptr->createSprite();
-            window.draw(sprite);
+            if (const CardWithTexture& card = *card_ptr; card.face_up) {
+                window.draw(card.createSprite());
+            } else {
+                sf::Sprite backSprite(backTexture);
+                backSprite.setPosition(card.position);
+                window.draw(backSprite);
+            }
         }
         window.display();
     }

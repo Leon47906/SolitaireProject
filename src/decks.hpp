@@ -41,7 +41,7 @@ class GenericDeck {
             }
             std::cout << std::endl;
         }
-        CardWithTexture* operator[](size_t index) {
+        CardWithTexture* operator[](const size_t& index) const {
             return cards[index];
         }
         [[nodiscard]] unsigned int size() const { return cards.size(); }
@@ -49,15 +49,21 @@ class GenericDeck {
 
 class Deck : public GenericDeck {
     public:
-        Deck() {
-            for (int i = 1; i <= 13; i++) {
-                const std::vector<std::string> filenames(4);
-                for (const auto& suit : {'H', 'D', 'S', 'C'}) {
-                    //const std::string filename = "src/sprites/" + std::to_string(i) + suit + ".png";
-                    cards.emplace_back(i, suit, "src/Sprites/1C.png");
-                }
+    Deck() {
+        for (int i = 1; i <= 13; i++) {
+            const std::vector<std::string> filenames(4);
+            for (const auto& suit : {'H', 'D', 'S', 'C'}) {
+                const std::string filename = "src/sprites/" + std::to_string(i) + suit + ".png";
+                auto* c_ptr = new CardWithTexture(i, suit, filename);
+                cards.push_back(c_ptr);
             }
         }
+    }
+    ~Deck() {
+        for (auto& card : cards) {
+            delete card;
+        }
+    }
 };
 
 #endif //DECKS_HPP
