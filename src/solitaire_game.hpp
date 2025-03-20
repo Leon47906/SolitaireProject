@@ -9,23 +9,25 @@ public:
     std::vector<GenericDeck> tableau;
     std::vector<GenericDeck> foundation;
     GenericDeck waste;
+    std::vector<CardWithTexture*> rendered_cards;
     SolitaireGame() {
         deck.shuffle();
         for (int i = 0; i < 7; i++) {
             tableau.emplace_back();
             for (int j = 0; j <= i; j++) {
                 CardWithTexture* c_ptr = deck.draw_from_top();
-                CardWithTexture& c = *c_ptr;
                 if (j == i) {
-                    c.flip();
-                    c.makeClickable();
+                    c_ptr->flip();
+                    c_ptr->makeClickable();
                 }
-                tableau[i].add_to_top(&c);
+                rendered_cards.push_back(c_ptr);
+                tableau[i].add_to_top(c_ptr);
             }
         }
         for (int i = 0; i < 4; i++) {
             foundation.emplace_back();
         }
+        rendered_cards.push_back(deck.cards.back());
     }
     [[nodiscard]] std::vector<CardWithTexture> getClickableCards() {
         std::vector<CardWithTexture> clickable_cards;
@@ -80,68 +82,55 @@ public:
         std::cout << "Waste: ";
         waste.print();
     }
-};
-Deck deck;
-std::vector<GenericDeck> tableau;
-std::vector<GenericDeck> foundation;
-GenericDeck waste;
-inline void move_card(CardWithTexture* card, GenericDeck& destination) {
-    if (!card->is_clickable) {
-        return;
-    }
-    for (auto& c : deck) {
-        if (c == card) {
+    void move_card(CardWithTexture* card, GenericDeck& destination) {
+        if (!card->is_clickable) {
+            return;
+        }
+        if (deck.size() > 0 && deck.cards.back() == card) {
             if (deck.size() == 1) {
                 destination.add_to_top(card);
                 deck.cards.pop_back();
+                card->flip();
+                card->makeClickable();
                 return;
             }
-
-            deck.cards.pop_back();
             destination.add_to_top(card);
+            deck.cards.pop_back();
+            CardWithTexture* new_top = deck.cards.back();
+            new_top->flip();
+            new_top->makeClickable();
+            rendered_cards.push_back(new_top);
             return;
         }
-    }
-    for (auto& t : tableau) {
-        for (auto& c : t.cards) {
-            if (c == card) {
-                if (t.size() == 1) {
+        for (auto& t : tableau) {
+            if (t.size() == 0) {
+                continue;
+            }
+            for (auto& c : t.cards) {
+                if (c == card) {
+                    if (t.size() == 1) {
+                        destination.add_to_top(card);
+                        t.cards.pop_back();
+                        return;
+                    }
                     destination.add_to_top(card);
                     t.cards.pop_back();
+                    CardWithTexture* new_top = t.cards.back();
+                    new_top->makeClickable();
+                    new_top->flip();
                     return;
                 }
-                destination.add_to_top(card);
-                t.cards.pop_back();
-                CardWithTexture* new_top = t[t.size()-1];
-                new_top->makeClickable();
-                new_top->flip();
-                return;
             }
         }
-    }
-    for (auto& c : waste) {
-        if (c == card) {
+        if (waste.size() > 0 && waste.cards.back() == card) {
             waste.cards.pop_back();
             destination.add_to_top(card);
             return;
         }
     }
-    if (origin.size() == 0) {
-        return;
-    }
-    if (origin.size() == 1) {
-        destination.add_to_top(card);
-        origin.cards.pop_back();
-        return;
-    }
-    if (origin.size() > 1) {
-        origin.cards.pop_back();
-        CardWithTexture* new_top = origin[origin.size()-1];
-        new_top->makeClickable();
-        new_top->flip();
-        destination.add_to_top(card);
-    }
-}
+};
+
+
 
 inline void move_card(CardWithTexture* card, Deck& origin, GenericDeck& destination) {
     origin.cards.pop_back();
