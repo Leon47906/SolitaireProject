@@ -46,6 +46,19 @@ public:
         }
         return clickable_cards;
     }
+    bool isMoveValid(const CardWithTexture& card, const GenericDeck& destination) {
+        if (destination.size() == 0) {
+            if (card.value == 13) {
+                return true;
+            }
+        } else {
+            const CardWithTexture* top_card = destination[destination.size()-1];
+            if (top_card->value == card.value + 1 && top_card->is_red != card.is_red) {
+                return true;
+            }
+        }
+        return false;
+    }
     void print() const {
         std::cout << "Deck: ";
         deck.print();
@@ -68,5 +81,71 @@ public:
         waste.print();
     }
 };
+Deck deck;
+std::vector<GenericDeck> tableau;
+std::vector<GenericDeck> foundation;
+GenericDeck waste;
+inline void move_card(CardWithTexture* card, GenericDeck& destination) {
+    if (!card->is_clickable) {
+        return;
+    }
+    for (auto& c : deck) {
+        if (c == card) {
+            if (deck.size() == 1) {
+                destination.add_to_top(card);
+                deck.cards.pop_back();
+                return;
+            }
+
+            deck.cards.pop_back();
+            destination.add_to_top(card);
+            return;
+        }
+    }
+    for (auto& t : tableau) {
+        for (auto& c : t.cards) {
+            if (c == card) {
+                if (t.size() == 1) {
+                    destination.add_to_top(card);
+                    t.cards.pop_back();
+                    return;
+                }
+                destination.add_to_top(card);
+                t.cards.pop_back();
+                CardWithTexture* new_top = t[t.size()-1];
+                new_top->makeClickable();
+                new_top->flip();
+                return;
+            }
+        }
+    }
+    for (auto& c : waste) {
+        if (c == card) {
+            waste.cards.pop_back();
+            destination.add_to_top(card);
+            return;
+        }
+    }
+    if (origin.size() == 0) {
+        return;
+    }
+    if (origin.size() == 1) {
+        destination.add_to_top(card);
+        origin.cards.pop_back();
+        return;
+    }
+    if (origin.size() > 1) {
+        origin.cards.pop_back();
+        CardWithTexture* new_top = origin[origin.size()-1];
+        new_top->makeClickable();
+        new_top->flip();
+        destination.add_to_top(card);
+    }
+}
+
+inline void move_card(CardWithTexture* card, Deck& origin, GenericDeck& destination) {
+    origin.cards.pop_back();
+    destination.add_to_top(card);
+}
 
 #endif //SOLITAIRE_GAME_HPP
