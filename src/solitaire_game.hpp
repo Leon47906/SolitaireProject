@@ -9,8 +9,12 @@ public:
     std::vector<GenericDeck> tableau;
     std::vector<GenericDeck> foundation;
     GenericDeck waste;
-    std::vector<CardWithTexture*> movable_cards, rendered_cards;
-    SolitaireGame() {
+    std::vector<CardWithTexture*> rendered_cards;
+    sf::Vector2f deck_position, waste_position;
+    std::vector<sf::Vector2f> foundation_positions;
+    SolitaireGame(const sf::Vector2f _deck_position, const sf::Vector2f _waste_position,
+        const std::vector<sf::Vector2f>& _foundation_positions) : deck_position(_deck_position),
+    waste_position(_waste_position), foundation_positions(_foundation_positions) {
         deck.shuffle();
         for (int i = 0; i < 7; i++) {
             tableau.emplace_back();
@@ -19,7 +23,6 @@ public:
                 if (j == i) {
                     c_ptr->flip();
                     c_ptr->makeClickable();
-                    movable_cards.push_back(c_ptr);
                 }
                 rendered_cards.push_back(c_ptr);
                 tableau[i].add_to_top(c_ptr);
@@ -29,55 +32,7 @@ public:
             foundation.emplace_back();
         }
         rendered_cards.push_back(deck.cards.back());
-    }
-    void drawFromDeck(const sf::Vector2f waste_position) {
-        if (deck.size() == 0) {
-            while (waste.size() > 0) {
-                CardWithTexture* c_ptr = waste.draw_from_top();
-                c_ptr->flip();
-                c_ptr->makeUnclickable();
-                deck.add_to_top(c_ptr);
-            }
-            return;
-        }
-        CardWithTexture* c_ptr = deck.draw_from_top();
-        c_ptr->flip();
-        c_ptr->makeClickable();
-        switch (size_t waste_size = waste.size()) {
-        case 0: {
-            c_ptr->position = waste_position;
-            break;
-        }
-        case 1: {
-            c_ptr->position = waste_position+sf::Vector2f({0, TABLEAU_VERTICAL_SPACING});
-            break;
-        }
-        case 2: {
-            //waste[1]->makeUnclickable();
-            c_ptr->position = waste_position+sf::Vector2f({0, 2*TABLEAU_VERTICAL_SPACING});
-            break;
-        }
-        default: {
-          // remove waste[0] from rendered_cards
-            for (int i = 0; i < rendered_cards.size(); i++) {
-                if (rendered_cards[i] == waste[waste_size-3]) {
-                    std::cout << "Erasing " << rendered_cards[i]->toString() << std::endl;
-                    rendered_cards.erase(rendered_cards.begin() + i);
-                }
-            }
-            for (int i = 0; i < 3 ; i++) {
-                waste[waste_size - i - 1]->position = waste_position+sf::Vector2f({0, (2-i)*TABLEAU_VERTICAL_SPACING});
-            }
-            break;
-        }
-        }
-        waste.add_to_top(c_ptr);
-        rendered_cards.push_back(deck.cards.back());
-        for (int i = 0; i < waste.size(); i++) {
-            std::cout << waste[i]->toString() + " ";
-        }
-        std::cout << std::endl;
-        //print();
+        deck.cards.back()->makeClickable();
     }
     [[nodiscard]] std::vector<CardWithTexture> getClickableCards() {
         std::vector<CardWithTexture> clickable_cards;
@@ -98,7 +53,21 @@ public:
         }
         return clickable_cards;
     }
-    bool isMoveValid(const CardWithTexture& card, const GenericDeck& destination) {
+    bool isFoundationMoveValid(const CardWithTexture* card_ptr, GenericDeck* destination_ptr) {
+        if (destination_ptr->size() == 0) {
+            if (card_ptr->value == 1) {
+                return true;
+            }
+        }
+        else {
+            CardWithTexture* top_card = destination_ptr->cards.back();
+            if (top_card->value == card_ptr->value - 1 && top_card->suit == card_ptr->suit) {
+                return true;
+            }
+        }
+        return false;
+    }
+    bool isTableauMoveValid(const CardWithTexture& card, const GenericDeck& destination) {
         if (destination.size() == 0) {
             if (card.value == 13) {
                 return true;
@@ -132,59 +101,155 @@ public:
         std::cout << "Waste: ";
         waste.print();
     }
-    void move_card(CardWithTexture* card, GenericDeck& destination) {
-        if (!card->is_clickable) {
-            return;
-        }
-        if (deck.size() > 0 && deck.cards.back() == card) {
-            if (deck.size() == 1) {
-                destination.add_to_top(card);
-                deck.cards.pop_back();
-                card->flip();
-                card->makeClickable();
-                return;
-            }
-            destination.add_to_top(card);
-            deck.cards.pop_back();
-            CardWithTexture* new_top = deck.cards.back();
-            new_top->flip();
-            new_top->makeClickable();
-            rendered_cards.push_back(new_top);
+    void moveCard(CardWithTexture* card_ptr, GenericDeck& destination) {
+        if (!card_ptr->is_clickable) {
             return;
         }
         for (auto& t : tableau) {
-            if (t.size() == 0) {
-                continue;
-            }
-            for (auto& c : t.cards) {
-                if (c == card) {
-                    if (t.size() == 1) {
-                        destination.add_to_top(card);
-                        t.cards.pop_back();
+            switch (t.size()) {
+                case 0: {
+                    continue;
+                }
+                case 1: {
+                    if (t[0] == card_ptr) {
+                        destination.add_to_top(t.draw_from_top());
                         return;
                     }
-                    destination.add_to_top(card);
-                    t.cards.pop_back();
-                    CardWithTexture* new_top = t.cards.back();
-                    new_top->makeClickable();
-                    new_top->flip();
-                    return;
+                }
+                default: {
+                    for (size_t i = 0; i < t.size(); i++) {
+                        if (t[i] == card_ptr) {
+                            destination.add_to_top(t.draw_from_top());
+                            CardWithTexture* new_top = t.cards.back();
+                            new_top->makeClickable();
+                            new_top->flip();
+                            return;
+                        }
+                    }
                 }
             }
+
         }
-        if (waste.size() > 0 && waste.cards.back() == card) {
-            waste.cards.pop_back();
-            destination.add_to_top(card);
+        if (waste.size() > 0 && waste.cards.back() == card_ptr) {
+            if (waste.size() < 3) destination.add_to_top(waste.draw_from_top());
+            else {
+                destination.add_to_top(waste.draw_from_top());
+                CardWithTexture* third_last = waste.cards[waste.size()-3];
+                third_last->setPosition(sf::Vector2f(waste_position));
+                rendered_cards.push_back(third_last);
+                CardWithTexture* second_last = waste.cards[waste.size()-2];
+                second_last->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
+                CardWithTexture* last = waste.cards[waste.size()-1];
+                last->setPosition(waste_position+sf::Vector2f(0, 2*TABLEAU_VERTICAL_SPACING));
+            }
+        }
+    }
+    void drawFromDeck() {
+        if (deck.size() == 0) {
+            while (waste.size() > 0) {
+                CardWithTexture* c_ptr = waste.draw_from_top();
+                c_ptr->flip();
+                c_ptr->makeUnclickable();
+                c_ptr->setPosition(deck_position);
+                for (int i = 0; i < rendered_cards.size(); i++) {
+                    if (rendered_cards[i] == c_ptr) {
+                        rendered_cards.erase(rendered_cards.begin() + i);
+                        break;
+                    }
+                }
+                deck.add_to_top(c_ptr);
+            }
             return;
+        }
+        CardWithTexture* c_ptr = deck.draw_from_top();
+        if (deck.size() > 0) {
+            deck.cards.back()->makeClickable();
+            rendered_cards.push_back(deck.cards.back());
+        }
+        switch (size_t waste_size = waste.size()) {
+            case 0: {
+                c_ptr->setPosition(waste_position);
+                c_ptr->flip();
+                rendered_cards.push_back(c_ptr);
+                waste.add_to_top(c_ptr);
+                break;
+            }
+            case 1: {
+                waste[0]->makeUnclickable();
+                c_ptr->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
+                c_ptr->flip();
+                rendered_cards.push_back(c_ptr);
+                waste.add_to_top(c_ptr);
+                break;
+            }
+            case 2: {
+                waste[1]->makeUnclickable();
+                c_ptr->setPosition(waste_position+sf::Vector2f(0, 2*TABLEAU_VERTICAL_SPACING));
+                c_ptr->flip();
+                rendered_cards.push_back(c_ptr);
+                waste.add_to_top(c_ptr);
+                break;
+            }
+            default: {
+                //remove the third last card from the waste from the rendered cards
+                CardWithTexture* third_last = waste.cards[waste_size-3];
+                for (int i = 0; i < rendered_cards.size(); i++) {
+                    if (rendered_cards[i] == third_last) {
+                        rendered_cards.erase(rendered_cards.begin() + i);
+                        break;
+                    }
+                }
+                CardWithTexture* second_last = waste.cards[waste_size-2];
+                second_last->setPosition(waste_position);
+                CardWithTexture* last = waste.cards[waste_size-1];
+                last->makeUnclickable();
+                last->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
+                c_ptr->setPosition(waste_position+sf::Vector2f(0, 2*TABLEAU_VERTICAL_SPACING));
+                c_ptr->flip();
+                rendered_cards.push_back(c_ptr);
+                waste.add_to_top(c_ptr);
+            }
+        }
+    }
+    void moveFromWaste() {
+        if (waste.size() == 0) {
+            return;
+        }
+        CardWithTexture* c_ptr = waste.draw_from_top();
+        if (c_ptr->value==1) {
+            switch (c_ptr->suit) {
+                case 'H': {
+                    foundation[0].add_to_top(c_ptr);
+                    c_ptr->setPosition(foundation_positions[0]);
+                    c_ptr->makeUnclickable();
+                    return;
+                }
+                case 'D': {
+                    foundation[1].add_to_top(c_ptr);
+                    c_ptr->setPosition(foundation_positions[1]);
+                    c_ptr->makeUnclickable();
+                    return;
+                }
+                case 'S': {
+                    foundation[2].add_to_top(c_ptr);
+                    c_ptr->setPosition(foundation_positions[2]);
+                    c_ptr->makeUnclickable();
+                    return;
+                }
+                case 'C': {
+                    foundation[3].add_to_top(c_ptr);
+                    c_ptr->setPosition(foundation_positions[3]);
+                    c_ptr->makeUnclickable();
+                    break;
+                }
+                default:
+                    break;
+            }
         }
     }
 };
 
 
 
-inline void move_card(CardWithTexture* card, Deck& origin, GenericDeck& destination) {
-    origin.cards.pop_back();
-    destination.add_to_top(card);
-}
 
 #endif //SOLITAIRE_GAME_HPP

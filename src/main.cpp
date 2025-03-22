@@ -6,11 +6,6 @@ constexpr sf::Vector2f offset = {32.0f, 48.0f};
 
 int main()
 {
-    SolitaireGame game;
-    game.print();
-    Deck& deck = game.deck;
-    GenericDeck& waste = game.waste;
-    std::vector<GenericDeck>& foundation = game.foundation;
     sf::Vector2f deck_position = {7*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
         waste_position = {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0};
     sf::Rect deck_rect(deck_position, {CARD_WIDTH, CARD_HEIGHT}),
@@ -20,18 +15,21 @@ int main()
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), CARD_HEIGHT+TABLEAU_VERTICAL_SPACING},
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 2*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)},
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 3*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)}};
+    SolitaireGame game(deck_position, waste_position, foundation_positions);
+    game.print();
+    Deck& deck = game.deck;
+    GenericDeck& waste = game.waste;
+    std::vector<GenericDeck>& foundation = game.foundation;
     for (auto card_ptr : deck.cards) {
         CardWithTexture& card = *card_ptr;
         card.setPosition(deck_position);
     }
     std::vector<GenericDeck>& tableau = game.tableau;
-    std::vector<CardWithTexture*> movable_cards, rendered_cards = game.rendered_cards;
     const auto backTexture(sf::Texture("src/Sprites/CardBackRed.png"));
     for (size_t i = 0; i < tableau.size(); i++) {
         for (size_t j = 0; j < tableau[i].size(); j++) {
             CardWithTexture& card = *tableau[i][j];
             card.setPosition({i*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), j*(TABLEAU_VERTICAL_SPACING)});
-            if (j == tableau[i].size()-1) {movable_cards.push_back(&card);}
         }
     }
     auto window = sf::RenderWindow(sf::VideoMode({800u, 600u}), "Solitaire",
@@ -59,47 +57,56 @@ int main()
                 if (mouseButtonPresed->button == sf::Mouse::Button::Left) {
                     //release card
                     if (dragging_card_ptr != nullptr) {
-                        const int x_index = mouse_x / (CARD_WIDTH + TABLEAU_HORIZONTAL_SPACING);
-                        std::cout << x_index << std::endl;
+                        for (auto& f : foundation) {
+                            if (f.size() > 0) {
+                                if (game.isFoundationMoveValid(dragging_card_ptr, &f)) {
+
+                                }
+                            }
+                        }
                     }
 
                     else {
                         if (deck_rect.contains(mouse_position)) {
-                            game.drawFromDeck(waste_position);
+                            game.drawFromDeck();
+                            continue;
                         }
-                        for (auto card_ptr : movable_cards) {
-                            if (dragging_card_ptr == nullptr) {
-                                if (card_ptr->createSprite().getGlobalBounds().contains(mouse_position)) {
-                                    initial_position = card_ptr->position;
-                                    if (card_ptr->value == 1) {
-                                        const char& suit = card_ptr->suit;
-                                        switch (suit) {
-                                            case 'H':
-                                                game.move_card(card_ptr, foundation[0]);
-                                                card_ptr->position = foundation_positions[0];
-                                            case 'D':
-                                                game.move_card(card_ptr, foundation[1]);
-                                                card_ptr->position = foundation_positions[1];
-                                            case 'S':
-                                                game.move_card(card_ptr, foundation[2]);
-                                                card_ptr->position = foundation_positions[2];
-                                            case 'C':
-                                                game.move_card(card_ptr, foundation[3]);
-                                                card_ptr->position = foundation_positions[3];
-                                            default:
-                                                break;
+                        for (auto card_ptr : game.rendered_cards) {
+                            if (card_ptr->is_clickable && card_ptr->createSprite().getGlobalBounds().contains(mouse_position)) {
+                                initial_position = card_ptr->position;
+                                if (card_ptr->value == 1) {
+                                    switch (card_ptr->suit) {
+                                        case 'H': {
+                                            game.moveCard(card_ptr, foundation[0]);
+                                            card_ptr->setPosition(foundation_positions[0]);
+                                            card_ptr->makeUnclickable();
+                                            break;
                                         }
-                                        for (int i = 0; i < movable_cards.size(); i++) {
-                                            if (movable_cards[i] == card_ptr) {
-                                                movable_cards.erase(movable_cards.begin() + i);
-                                                break;
-                                            }
+                                        case 'D': {
+                                            game.moveCard(card_ptr, foundation[1]);
+                                            card_ptr->setPosition(foundation_positions[1]);
+                                            card_ptr->makeUnclickable();
+                                            break;
                                         }
-                                    }
-                                    else {
-                                        dragging_card_ptr = card_ptr;
-                                        break;
-                                    }
+                                        case 'S': {
+                                            game.moveCard(card_ptr, foundation[2]);
+                                            card_ptr->setPosition(foundation_positions[2]);
+                                            card_ptr->makeUnclickable();
+                                            break;
+                                        }
+                                        case 'C': {
+                                            game.moveCard(card_ptr, foundation[3]);
+                                            card_ptr->setPosition(foundation_positions[3]);
+                                            card_ptr->makeUnclickable();
+                                            break;
+                                        }
+                                        default:
+                                            break;
+                                        }
+                                }
+                                else {
+                                    dragging_card_ptr = card_ptr;
+                                    break;
                                 }
                             }
                         }
@@ -120,7 +127,7 @@ int main()
             backSprite.setPosition(deck_position);
             window.draw(backSprite);
         }
-        for (const auto card_ptr : rendered_cards) {
+        for (const auto card_ptr : game.rendered_cards) {
             if (const CardWithTexture& card = *card_ptr; card.face_up) {
                 window.draw(card.createSprite());
             } else {
