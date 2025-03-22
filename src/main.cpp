@@ -69,6 +69,7 @@ int main()
                     else {
                         if (deck_rect.contains(mouse_position)) {
                             game.drawFromDeck();
+
                             continue;
                         }
                         for (auto card_ptr : game.rendered_cards) {

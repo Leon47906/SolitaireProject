@@ -135,7 +135,7 @@ public:
             else {
                 destination.add_to_top(waste.draw_from_top());
                 CardWithTexture* third_last = waste.cards[waste.size()-3];
-                third_last->setPosition(sf::Vector2f(waste_position));
+                third_last->setPosition(waste_position);
                 rendered_cards.push_back(third_last);
                 CardWithTexture* second_last = waste.cards[waste.size()-2];
                 second_last->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
