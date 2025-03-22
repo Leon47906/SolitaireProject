@@ -69,7 +69,6 @@ int main()
                     else {
                         if (deck_rect.contains(mouse_position)) {
                             game.drawFromDeck();
-
                             continue;
                         }
                         for (auto card_ptr : game.rendered_cards) {
@@ -127,6 +126,12 @@ int main()
             sf::Sprite backSprite(backTexture);
             backSprite.setPosition(deck_position);
             window.draw(backSprite);
+        }
+        if (deck.size() == 0) {
+            const auto texture(sf::Texture("src/Sprites/GreenReload.png"));
+            sf::Sprite sprite(texture);
+            sprite.setPosition(deck_position);
+            window.draw(sprite);
         }
         for (const auto card_ptr : game.rendered_cards) {
             if (const CardWithTexture& card = *card_ptr; card.face_up) {
