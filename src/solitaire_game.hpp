@@ -9,7 +9,7 @@ public:
     std::vector<GenericDeck> tableau;
     std::vector<GenericDeck> foundation;
     GenericDeck waste;
-    std::vector<CardWithTexture*> rendered_cards;
+    std::vector<CardWithTexture*> movable_cards, rendered_cards;
     SolitaireGame() {
         deck.shuffle();
         for (int i = 0; i < 7; i++) {
@@ -19,6 +19,7 @@ public:
                 if (j == i) {
                     c_ptr->flip();
                     c_ptr->makeClickable();
+                    movable_cards.push_back(c_ptr);
                 }
                 rendered_cards.push_back(c_ptr);
                 tableau[i].add_to_top(c_ptr);
@@ -28,6 +29,55 @@ public:
             foundation.emplace_back();
         }
         rendered_cards.push_back(deck.cards.back());
+    }
+    void drawFromDeck(const sf::Vector2f waste_position) {
+        if (deck.size() == 0) {
+            while (waste.size() > 0) {
+                CardWithTexture* c_ptr = waste.draw_from_top();
+                c_ptr->flip();
+                c_ptr->makeUnclickable();
+                deck.add_to_top(c_ptr);
+            }
+            return;
+        }
+        CardWithTexture* c_ptr = deck.draw_from_top();
+        c_ptr->flip();
+        c_ptr->makeClickable();
+        switch (size_t waste_size = waste.size()) {
+        case 0: {
+            c_ptr->position = waste_position;
+            break;
+        }
+        case 1: {
+            c_ptr->position = waste_position+sf::Vector2f({0, TABLEAU_VERTICAL_SPACING});
+            break;
+        }
+        case 2: {
+            //waste[1]->makeUnclickable();
+            c_ptr->position = waste_position+sf::Vector2f({0, 2*TABLEAU_VERTICAL_SPACING});
+            break;
+        }
+        default: {
+          // remove waste[0] from rendered_cards
+            for (int i = 0; i < rendered_cards.size(); i++) {
+                if (rendered_cards[i] == waste[waste_size-3]) {
+                    std::cout << "Erasing " << rendered_cards[i]->toString() << std::endl;
+                    rendered_cards.erase(rendered_cards.begin() + i);
+                }
+            }
+            for (int i = 0; i < 3 ; i++) {
+                waste[waste_size - i - 1]->position = waste_position+sf::Vector2f({0, (2-i)*TABLEAU_VERTICAL_SPACING});
+            }
+            break;
+        }
+        }
+        waste.add_to_top(c_ptr);
+        rendered_cards.push_back(deck.cards.back());
+        for (int i = 0; i < waste.size(); i++) {
+            std::cout << waste[i]->toString() + " ";
+        }
+        std::cout << std::endl;
+        //print();
     }
     [[nodiscard]] std::vector<CardWithTexture> getClickableCards() {
         std::vector<CardWithTexture> clickable_cards;

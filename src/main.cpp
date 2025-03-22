@@ -13,6 +13,8 @@ int main()
     std::vector<GenericDeck>& foundation = game.foundation;
     sf::Vector2f deck_position = {7*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
         waste_position = {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0};
+    sf::Rect deck_rect(deck_position, {CARD_WIDTH, CARD_HEIGHT}),
+        waste_rect(waste_position, {CARD_WIDTH, CARD_HEIGHT});
     std::vector<sf::Vector2f> foundation_positions = {
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), CARD_HEIGHT+TABLEAU_VERTICAL_SPACING},
@@ -58,38 +60,12 @@ int main()
                     //release card
                     if (dragging_card_ptr != nullptr) {
                         const int x_index = mouse_x / (CARD_WIDTH + TABLEAU_HORIZONTAL_SPACING);
-                        if (x_index == 8) {
-                            if (dragging_card_ptr == deck.cards.back()) {
-                                deck.draw_from_top();
-                                CardWithTexture* card_ptr = deck[deck.size()-1];
-                                card_ptr->flip();
-                                rendered_cards.push_back(card_ptr);
-                                movable_cards.push_back(card_ptr);
-                                waste.add_to_top(dragging_card_ptr);
-                                dragging_card_ptr->position = waste_position;
-                                game.print();
-                                for (int i = 0; i < movable_cards.size(); i++) {
-                                    if (movable_cards[i] == dragging_card_ptr) {
-                                        movable_cards.erase(movable_cards.begin() + i);
-                                        break;
-                                    }
-                                }
-                                dragging_card_ptr = nullptr;
-                            }
-
-                        }
-                        else {
-                            for (size_t i = 0; i < tableau.size(); i++) {
-                                if (i == x_index) {
-                                    tableau[i].add_to_top(dragging_card_ptr);
-                                    break;
-                                }
-                            }
-                        }
+                        std::cout << x_index << std::endl;
                     }
-                    else {
-                        if (deck.cards.back()->createSprite().getGlobalBounds().contains(mouse_position)) {
 
+                    else {
+                        if (deck_rect.contains(mouse_position)) {
+                            game.drawFromDeck(waste_position);
                         }
                         for (auto card_ptr : movable_cards) {
                             if (dragging_card_ptr == nullptr) {
