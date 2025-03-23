@@ -8,14 +8,17 @@ int main()
 {
     sf::Vector2f deck_position = {7*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
         waste_position = {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0};
-    sf::Rect deck_rect(deck_position, {CARD_WIDTH, CARD_HEIGHT}),
-        waste_rect(waste_position, {CARD_WIDTH, CARD_HEIGHT});
+    sf::Rect deck_rect(deck_position, {CARD_WIDTH, CARD_HEIGHT});
     std::vector<sf::Vector2f> foundation_positions = {
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), CARD_HEIGHT+TABLEAU_VERTICAL_SPACING},
         {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 2*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)},
-        {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 3*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)}};
-    SolitaireGame game(deck_position, waste_position, foundation_positions);
+        {9*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 3*(CARD_HEIGHT+TABLEAU_VERTICAL_SPACING)}},
+    waste_positions = {
+        {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
+        {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), TABLEAU_VERTICAL_SPACING},
+        {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 2*TABLEAU_VERTICAL_SPACING}};
+    SolitaireGame game(deck_position, waste_positions, foundation_positions);
     game.print();
     Deck& deck = game.deck;
     GenericDeck& waste = game.waste;

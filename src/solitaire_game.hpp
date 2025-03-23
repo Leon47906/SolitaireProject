@@ -10,11 +10,11 @@ public:
     std::vector<GenericDeck> foundation;
     GenericDeck waste;
     std::vector<CardWithTexture*> rendered_cards;
-    sf::Vector2f deck_position, waste_position;
-    std::vector<sf::Vector2f> foundation_positions;
-    SolitaireGame(const sf::Vector2f _deck_position, const sf::Vector2f _waste_position,
+    sf::Vector2f deck_position;
+    std::vector<sf::Vector2f> waste_positions, foundation_positions;
+    SolitaireGame(const sf::Vector2f _deck_position, const std::vector<sf::Vector2f>& _waste_positions,
         const std::vector<sf::Vector2f>& _foundation_positions) : deck_position(_deck_position),
-    waste_position(_waste_position), foundation_positions(_foundation_positions) {
+    waste_positions(_waste_positions), foundation_positions(_foundation_positions) {
         deck.shuffle();
         for (int i = 0; i < 7; i++) {
             tableau.emplace_back();
@@ -135,12 +135,18 @@ public:
             else {
                 destination.add_to_top(waste.draw_from_top());
                 CardWithTexture* third_last = waste.cards[waste.size()-3];
-                third_last->setPosition(waste_position);
-                rendered_cards.push_back(third_last);
+                third_last->setPosition(waste_positions[0]);
                 CardWithTexture* second_last = waste.cards[waste.size()-2];
-                second_last->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
+                second_last->setPosition(waste_positions[1]);
                 CardWithTexture* last = waste.cards[waste.size()-1];
-                last->setPosition(waste_position+sf::Vector2f(0, 2*TABLEAU_VERTICAL_SPACING));
+                last->setPosition(waste_positions[2]);
+                last->makeClickable();
+                for (int i = 0; i < rendered_cards.size(); i++) {
+                    if (rendered_cards[i] == second_last) {
+                        rendered_cards.insert(rendered_cards.begin()+i, third_last);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -168,7 +174,7 @@ public:
         }
         switch (size_t waste_size = waste.size()) {
             case 0: {
-                c_ptr->setPosition(waste_position);
+                c_ptr->setPosition(waste_positions[0]);
                 c_ptr->flip();
                 rendered_cards.push_back(c_ptr);
                 waste.add_to_top(c_ptr);
@@ -176,7 +182,7 @@ public:
             }
             case 1: {
                 waste[0]->makeUnclickable();
-                c_ptr->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
+                c_ptr->setPosition(waste_positions[1]);
                 c_ptr->flip();
                 rendered_cards.push_back(c_ptr);
                 waste.add_to_top(c_ptr);
@@ -184,7 +190,7 @@ public:
             }
             case 2: {
                 waste[1]->makeUnclickable();
-                c_ptr->setPosition(waste_position+sf::Vector2f(0, 2*TABLEAU_VERTICAL_SPACING));
+                c_ptr->setPosition(waste_positions[2]);
                 c_ptr->flip();
                 rendered_cards.push_back(c_ptr);
                 waste.add_to_top(c_ptr);
@@ -200,11 +206,11 @@ public:
                     }
                 }
                 CardWithTexture* second_last = waste.cards[waste_size-2];
-                second_last->setPosition(waste_position);
+                second_last->setPosition(waste_positions[0]);
                 CardWithTexture* last = waste.cards[waste_size-1];
                 last->makeUnclickable();
-                last->setPosition(waste_position+sf::Vector2f(0, TABLEAU_VERTICAL_SPACING));
-                c_ptr->setPosition(waste_position+sf::Vector2f(0, 2*TABLEAU_VERTICAL_SPACING));
+                last->setPosition(waste_positions[1]);
+                c_ptr->setPosition(waste_positions[2]);
                 c_ptr->flip();
                 rendered_cards.push_back(c_ptr);
                 waste.add_to_top(c_ptr);
