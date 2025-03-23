@@ -105,12 +105,11 @@ int main()
                                         }
                                         default:
                                             break;
-                                        }
-                                }
-                                else {
-                                    dragging_card_ptr = card_ptr;
+                                    }
                                     break;
                                 }
+                                dragging_card_ptr = card_ptr;
+                                break;
                             }
                         }
                     }
