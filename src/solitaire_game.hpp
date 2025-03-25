@@ -217,42 +217,6 @@ public:
             }
         }
     }
-    void moveFromWaste() {
-        if (waste.size() == 0) {
-            return;
-        }
-        CardWithTexture* c_ptr = waste.draw_from_top();
-        if (c_ptr->value==1) {
-            switch (c_ptr->suit) {
-                case 'H': {
-                    foundation[0].add_to_top(c_ptr);
-                    c_ptr->setPosition(foundation_positions[0]);
-                    c_ptr->makeUnclickable();
-                    return;
-                }
-                case 'D': {
-                    foundation[1].add_to_top(c_ptr);
-                    c_ptr->setPosition(foundation_positions[1]);
-                    c_ptr->makeUnclickable();
-                    return;
-                }
-                case 'S': {
-                    foundation[2].add_to_top(c_ptr);
-                    c_ptr->setPosition(foundation_positions[2]);
-                    c_ptr->makeUnclickable();
-                    return;
-                }
-                case 'C': {
-                    foundation[3].add_to_top(c_ptr);
-                    c_ptr->setPosition(foundation_positions[3]);
-                    c_ptr->makeUnclickable();
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-    }
 };
 
 

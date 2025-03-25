@@ -64,8 +64,14 @@ int main()
                     if (dragging_card_ptr != nullptr) {
                         for (auto& f : foundation) {
                             if (f.size() > 0) {
-                                if (game.isFoundationMoveValid(dragging_card_ptr, &f)) {
-
+                                if (f.cards.back()->createSprite().getGlobalBounds().contains(mouse_position)) {
+                                    if (game.isFoundationMoveValid(dragging_card_ptr, &f)) {
+                                        game.moveCard(dragging_card_ptr, f);
+                                        dragging_card_ptr->setPosition(foundation_positions[&f - &foundation[0]]);
+                                        dragging_card_ptr->makeUnclickable();
+                                        dragging_card_ptr = nullptr;
+                                        break;
+                                    }
                                 }
                             }
                         }
