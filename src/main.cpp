@@ -65,8 +65,8 @@ int main()
                         for (auto& f : foundation) {
                             if (f.size() > 0) {
                                 if (f.cards.back()->createSprite().getGlobalBounds().contains(mouse_position)) {
-                                    if (game.isFoundationMoveValid(dragging_card_ptr, &f)) {
-                                        game.moveCard(dragging_card_ptr, f);
+                                    if (SolitaireGame::isFoundationMoveValid(dragging_card_ptr, &f)) {
+                                        game.moveCard(dragging_card_ptr, &f);
                                         dragging_card_ptr->setPosition(foundation_positions[&f - &foundation[0]]);
                                         dragging_card_ptr->makeUnclickable();
                                         dragging_card_ptr = nullptr;
@@ -75,8 +75,20 @@ int main()
                                 }
                             }
                         }
+                        if (dragging_card_ptr == nullptr) {
+                            continue;
+                        }
+                        for (size_t i = 0; i < tableau.size(); i++) {
+                            if (GenericDeck& t = tableau[i]; t.size() > 0) {
+                                if (SolitaireGame::isTableauMoveValid(dragging_card_ptr, &t)) {
+                                    game.moveCard(dragging_card_ptr, &t);
+                                    dragging_card_ptr->setPosition({i*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), (t.size()-1)*(TABLEAU_VERTICAL_SPACING)});
+                                    dragging_card_ptr = nullptr;
+                                    break;
+                                }
+                            }
+                        }
                     }
-
                     else {
                         if (deck_rect.contains(mouse_position)) {
                             game.drawFromDeck();
@@ -88,25 +100,25 @@ int main()
                                 if (card_ptr->value == 1) {
                                     switch (card_ptr->suit) {
                                         case 'H': {
-                                            game.moveCard(card_ptr, foundation[0]);
+                                            game.moveCard(card_ptr, &foundation[0]);
                                             card_ptr->setPosition(foundation_positions[0]);
                                             card_ptr->makeUnclickable();
                                             break;
                                         }
                                         case 'D': {
-                                            game.moveCard(card_ptr, foundation[1]);
+                                            game.moveCard(card_ptr, &foundation[1]);
                                             card_ptr->setPosition(foundation_positions[1]);
                                             card_ptr->makeUnclickable();
                                             break;
                                         }
                                         case 'S': {
-                                            game.moveCard(card_ptr, foundation[2]);
+                                            game.moveCard(card_ptr, &foundation[2]);
                                             card_ptr->setPosition(foundation_positions[2]);
                                             card_ptr->makeUnclickable();
                                             break;
                                         }
                                         case 'C': {
-                                            game.moveCard(card_ptr, foundation[3]);
+                                            game.moveCard(card_ptr, &foundation[3]);
                                             card_ptr->setPosition(foundation_positions[3]);
                                             card_ptr->makeUnclickable();
                                             break;

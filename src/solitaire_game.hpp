@@ -53,28 +53,26 @@ public:
         }
         return clickable_cards;
     }
-    bool isFoundationMoveValid(const CardWithTexture* card_ptr, GenericDeck* destination_ptr) {
-        if (destination_ptr->size() == 0) {
+    static bool isFoundationMoveValid(const CardWithTexture* card_ptr, const GenericDeck* destination_ptr) {
+        if (const CardWithTexture* top_card = destination_ptr->cards.back(); destination_ptr->size() == 0) {
             if (card_ptr->value == 1) {
                 return true;
             }
         }
         else {
-            CardWithTexture* top_card = destination_ptr->cards.back();
             if (top_card->value == card_ptr->value - 1 && top_card->suit == card_ptr->suit) {
                 return true;
             }
         }
         return false;
     }
-    bool isTableauMoveValid(const CardWithTexture& card, const GenericDeck& destination) {
-        if (destination.size() == 0) {
-            if (card.value == 13) {
+    static bool isTableauMoveValid(const CardWithTexture* card_ptr, const GenericDeck* destination_ptr) {
+        if (const CardWithTexture* top_card = destination_ptr->cards.back(); destination_ptr->size() == 0) {
+            if (card_ptr->value == 13) {
                 return true;
             }
         } else {
-            const CardWithTexture* top_card = destination[destination.size()-1];
-            if (top_card->value == card.value + 1 && top_card->is_red != card.is_red) {
+            if (top_card->value == card_ptr->value + 1 && top_card->is_red != card_ptr->is_red) {
                 return true;
             }
         }
@@ -101,7 +99,18 @@ public:
         std::cout << "Waste: ";
         waste.print();
     }
-    void moveCard(CardWithTexture* card_ptr, GenericDeck& destination) {
+    void sortDeck(GenericDeck* deck_ptr) {
+
+    }
+    void moveCard(CardWithTexture* card_ptr, GenericDeck* destination_ptr) {
+        GenericDeck& destination = *destination_ptr;
+        bool to_tableau = false;
+        for (auto & i : tableau) {
+            if (destination_ptr == &i) {
+                to_tableau = true;
+                break;
+            }
+        }
         if (!card_ptr->is_clickable) {
             return;
         }
@@ -111,10 +120,8 @@ public:
                     continue;
                 }
                 case 1: {
-                    if (t[0] == card_ptr) {
-                        destination.add_to_top(t.draw_from_top());
-                        return;
-                    }
+                    if (t[0] == card_ptr) destination.add_to_top(t.draw_from_top());
+                    break;
                 }
                 default: {
                     for (size_t i = 0; i < t.size(); i++) {
@@ -123,12 +130,10 @@ public:
                             CardWithTexture* new_top = t.cards.back();
                             new_top->makeClickable();
                             new_top->flip();
-                            return;
                         }
                     }
                 }
             }
-
         }
         if (waste.size() > 0 && waste.cards.back() == card_ptr) {
             if (waste.size() < 3) destination.add_to_top(waste.draw_from_top());
@@ -149,6 +154,22 @@ public:
                 }
             }
         }
+        if (to_tableau) {
+            size_t flipped_count = 0;
+            for (const auto& c : destination_ptr->cards) {
+                if (c->face_up) {
+                    c->makeUnclickable();
+                    if (flipped_count == 0) c->makeClickable();
+                    flipped_count++;
+                }
+            }
+            if (flipped_count >= 2) {
+                CardWithTexture* last = destination_ptr->cards.back();
+                last->makeClickable();
+                last->face_up ? void() : last->flip();
+            }
+        }
+        sortDeck(destination_ptr);
     }
     void drawFromDeck() {
         if (deck.size() == 0) {
