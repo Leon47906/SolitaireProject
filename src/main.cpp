@@ -29,6 +29,7 @@ int main()
     }
     std::vector<GenericDeck>& tableau = game.tableau;
     const auto backTexture(sf::Texture("src/Sprites/CardBackRed.png"));
+    const auto backgroundTexture(sf::Texture("src/Sprites/Background.png"));
     for (size_t i = 0; i < tableau.size(); i++) {
         for (size_t j = 0; j < tableau[i].size(); j++) {
             CardWithTexture& card = *tableau[i][j];
@@ -37,6 +38,7 @@ int main()
     }
     auto window = sf::RenderWindow(sf::VideoMode({800u, 600u}), "Solitaire",
         sf::Style::Close);
+    sf::Sprite backgroundSprite(backgroundTexture);
     window.setFramerateLimit(144);
     CardWithTexture* dragging_card_ptr = nullptr;
     sf::Vector2f initial_position;
@@ -124,6 +126,7 @@ int main()
 
         }
         window.clear();
+        window.draw(backgroundSprite);
         if (deck.size() > 1) {
             sf::Sprite backSprite(backTexture);
             backSprite.setPosition(deck_position);
