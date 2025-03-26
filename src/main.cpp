@@ -220,6 +220,11 @@ int main()
                 congratulationsSprite.setTextureRect(rectSourceSprite);
                 clock.restart();
             }
+            window.clear();
+            window.draw(backgroundSprite);
+            window.draw(congratulationsSprite);
+            window.display();
+            continue;
         }
         window.clear();
         window.draw(backgroundSprite);
@@ -269,7 +274,6 @@ int main()
                 window.draw(waste.cards[waste.size()-1]->createSprite());
             }
         }
-        if (isGameWon) window.draw(congratulationsSprite);
         window.display();
     }
 }
