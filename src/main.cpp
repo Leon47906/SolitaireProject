@@ -20,7 +20,6 @@ int main()
         {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), TABLEAU_VERTICAL_SPACING},
         {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 2*TABLEAU_VERTICAL_SPACING}};
     SolitaireGame game(deck_position, waste_positions, foundation_positions);
-    game.print();
     Deck& deck = game.deck;
     GenericDeck& waste = game.waste;
     std::vector<GenericDeck>& foundation = game.foundation;
