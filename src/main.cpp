@@ -66,7 +66,23 @@ int main()
             if (game.isGameWon()) isGameWon = true;
             if (const auto* mouseButtonPresed = event->getIf<sf::Event::MouseButtonPressed>()) {
                 if (mouseButtonPresed->button == sf::Mouse::Button::Right && dragging_card_ptr != nullptr) {
-                    dragging_card_ptr->position = initial_position;
+                    bool from_tableau = false;
+                    std::vector<CardWithTexture*> moving_cards;
+                    for (auto& t : tableau) {
+                        if (auto card_it = std::find(t.cards.begin(), t.cards.end(), dragging_card_ptr); card_it != t.cards.end()) {
+                            for (auto it = card_it; it < t.cards.end(); ++it) {
+                                moving_cards.push_back(*it);
+                            }
+                            from_tableau = true;
+                            break;
+                        }
+                    }
+                    if (!from_tableau) dragging_card_ptr->position = initial_position;
+                    else {
+                        for (size_t i = 0; i < moving_cards.size(); i++) {
+                            moving_cards[i]->position = initial_position + sf::Vector2f(0, i*TABLEAU_VERTICAL_SPACING);
+                        }
+                    }
                     dragging_card_ptr = nullptr;
                 }
                 if (mouseButtonPresed->button == sf::Mouse::Button::Left) {
@@ -207,7 +223,23 @@ int main()
             if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
                 if (dragging_card_ptr != nullptr) {
-                    dragging_card_ptr->position = mouse_position - offset;
+                    bool from_tableau = false;
+                    std::vector<CardWithTexture*> moving_cards;
+                    for (auto& t : tableau) {
+                        if (auto card_it = std::find(t.cards.begin(), t.cards.end(), dragging_card_ptr); card_it != t.cards.end()) {
+                            for (auto it = card_it; it < t.cards.end(); ++it) {
+                                moving_cards.push_back(*it);
+                            }
+                            from_tableau = true;
+                            break;
+                        }
+                    }
+                    if (!from_tableau) dragging_card_ptr->position = mouse_position - offset;
+                    else {
+                        for (size_t i = 0; i < moving_cards.size(); i++) {
+                            moving_cards[i]->position = mouse_position - offset + sf::Vector2f(0, i*TABLEAU_VERTICAL_SPACING);
+                        }
+                    }
                 }
             }
 
