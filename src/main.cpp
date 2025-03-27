@@ -2,7 +2,11 @@
 #include <SFML/Window.hpp>
 #include "solitaire_game.hpp"   // Include the header file
 
-constexpr sf::Vector2f offset = {32.0f, 48.0f};
+constexpr float CARD_WIDTH = 128.0f;
+constexpr float CARD_HEIGHT = 192.0f;
+constexpr float TABLEAU_VERTICAL_SPACING = 32.0f;
+constexpr float TABLEAU_HORIZONTAL_SPACING = 32.0f;
+constexpr sf::Vector2f offset = {64.0f, 96.0f};
 
 int main()
 {
@@ -39,11 +43,11 @@ int main()
             if (j == 0) empty_tableau_rects.push_back({position, {CARD_WIDTH, CARD_HEIGHT}});
         }
     }
-    auto window = sf::RenderWindow(sf::VideoMode({800u, 600u}), "Solitaire",
+    auto window = sf::RenderWindow(sf::VideoMode({1600u, 900u}), "Solitaire",
         sf::Style::Close);
     sf::IntRect rectSourceSprite({0, 0}, {400, 209});
     sf::Sprite congratulationsSprite(congratulationsSheet, rectSourceSprite);
-    congratulationsSprite.setPosition({200, 150});
+    congratulationsSprite.setPosition({600, 350});
     sf::Clock clock;
     sf::Sprite backgroundSprite(backgroundTexture);
     window.setFramerateLimit(144);
@@ -55,7 +59,6 @@ int main()
         const float mouse_x = static_cast<float>(sf::Mouse::getPosition(window).x);
         const float mouse_y = static_cast<float>(sf::Mouse::getPosition(window).y);
         const sf::Vector2f mouse_position = {mouse_x, mouse_y};
-
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -261,6 +264,7 @@ int main()
         window.draw(backgroundSprite);
         if (deck.size() > 0) {
             sf::Sprite backSprite(backTexture);
+            backSprite.scale({2.0f, 2.0f});
             backSprite.setPosition(deck_position);
             window.draw(backSprite);
         }
@@ -268,6 +272,7 @@ int main()
             if (!waste.cards.empty()) {
                 const auto texture(sf::Texture("src/Sprites/GreenReload.png"));
                 sf::Sprite sprite(texture);
+                sprite.scale({2.0f, 2.0f});
                 sprite.setPosition(deck_position);
                 window.draw(sprite);
             }
@@ -278,6 +283,7 @@ int main()
                     window.draw(card.createSprite());
                 } else {
                     sf::Sprite backSprite(backTexture);
+                    backSprite.scale({2.0f, 2.0f});
                     backSprite.setPosition(card.position);
                     window.draw(backSprite);
                 }

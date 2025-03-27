@@ -3,12 +3,7 @@
 #ifndef CARDS_HPP
 #define CARDS_HPP
 #include <SFML/Graphics.hpp>
-#include <utility>
 
-constexpr float CARD_WIDTH = 64.0f;
-constexpr float CARD_HEIGHT = 96.0f;
-constexpr float TABLEAU_VERTICAL_SPACING = 16.0f;
-constexpr float TABLEAU_HORIZONTAL_SPACING = 16.0f;
 
 class Card {
 public:
@@ -43,12 +38,7 @@ public:
     void setPosition(const sf::Vector2f& _position) { position = _position; }
     sf::Sprite createSprite() const {
         sf::Sprite sprite(texture);
-        sprite.setPosition(position);
-        return sprite;
-    }
-    sf::Sprite createBackSprite() const {
-        const auto texture(sf::Texture("src/Sprites/CardBackRed.png"));
-        sf::Sprite sprite(texture);
+        sprite.setScale({2.0f, 2.0f});
         sprite.setPosition(position);
         return sprite;
     }
