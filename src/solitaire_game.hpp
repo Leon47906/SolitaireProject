@@ -177,18 +177,10 @@ public:
             }
         }
         if (to_tableau && destination_ptr->size() > 0) {
-            size_t flipped_count = 0;
             for (const auto& c : destination_ptr->cards) {
                 if (c->face_up) {
-                    c->makeUnclickable();
-                    if (flipped_count == 0) c->makeClickable();
-                    flipped_count++;
+                    c->makeClickable();
                 }
-            }
-            if (flipped_count > 1) {
-                CardWithTexture* last = destination_ptr->cards.back();
-                last->makeClickable();
-                last->face_up ? void() : last->flip();
             }
         }
     }
