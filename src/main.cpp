@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>    // Include the SFML header files
 #include <SFML/Window.hpp>
+#include <SFML/Audio.hpp>
 #include "solitaire_game.hpp"   // Include the header file
 
 constexpr float CARD_WIDTH = 128.0f;
@@ -8,8 +9,9 @@ constexpr float TABLEAU_VERTICAL_SPACING = 32.0f;
 constexpr float TABLEAU_HORIZONTAL_SPACING = 32.0f;
 constexpr sf::Vector2f offset = {64.0f, 96.0f};
 
-int main()
-{
+int main() {
+    sf::SoundBuffer buffer("src/Sounds/Kaching.ogg");
+    sf::Sound foundation_sound(buffer);
     sf::Vector2f deck_position = {7*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0},
         waste_position = {8*(CARD_WIDTH+TABLEAU_HORIZONTAL_SPACING), 0};
     sf::Rect deck_rect(deck_position, {CARD_WIDTH, CARD_HEIGHT});
@@ -98,6 +100,8 @@ int main()
                                         dragging_card_ptr->setPosition(foundation_positions[&f - &foundation[0]]);
                                         dragging_card_ptr->makeUnclickable();
                                         dragging_card_ptr = nullptr;
+                                        std::cout << "hi" << std::endl;
+                                        foundation_sound.play();
                                         break;
                                     }
                                 }
@@ -172,6 +176,7 @@ int main()
                                         default:
                                             break;
                                     }
+                                    foundation_sound.play();
                                     break;
                                 }
                                 dragging_card_ptr = card_ptr;
@@ -212,6 +217,7 @@ int main()
                                                 default:
                                                     break;
                                             }
+                                            foundation_sound.play();
                                             break;
                                         }
                                         dragging_card_ptr = card_ptr;

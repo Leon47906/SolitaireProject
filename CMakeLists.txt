@@ -14,7 +14,7 @@ FetchContent_MakeAvailable(SFML)
 
 add_executable(main WIN32 src/main.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics SFML::Window sfml-main)
+target_link_libraries(main PRIVATE SFML::Graphics SFML::Window SFML::Audio sfml-main)
 
 install(TARGETS main DESTINATION bin)   # Ensures solitaire.exe is installed
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/Sprites DESTINATION bin/src)
