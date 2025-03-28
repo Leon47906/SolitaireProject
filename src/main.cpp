@@ -100,7 +100,6 @@ int main() {
                                         dragging_card_ptr->setPosition(foundation_positions[&f - &foundation[0]]);
                                         dragging_card_ptr->makeUnclickable();
                                         dragging_card_ptr = nullptr;
-                                        std::cout << "hi" << std::endl;
                                         foundation_sound.play();
                                         break;
                                     }
